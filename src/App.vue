@@ -31,7 +31,7 @@ import { useRouter } from 'vue-router';
 import { supabase } from './supabase';
 import Administrateur from './components/Administrateur.vue';
 import Collaborateur from './components/Collaborateur.vue';
-
+ 
 const username = ref('');
 const password = ref('');
 const isLoggedIn = ref(false);
@@ -76,7 +76,7 @@ const logout = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  height: 98vh;
   background-color: #e5e5e5;
 }
 
@@ -98,7 +98,7 @@ const logout = () => {
 
 .login-box {
   background-color: #d9d9d9;
-  padding: 20px;
+  padding: 40px;
   border-radius: 10px;
   text-align: center;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
