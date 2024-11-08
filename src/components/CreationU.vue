@@ -40,19 +40,36 @@ const user = ref({
 
 const createUser = async () => {
   try {
+    // Vérification de la session utilisateur
+    const userSession = supabase.auth.user();
+    console.log('Session utilisateur:', userSession); // Log pour vérifier la session de l'utilisateur
+    
+    if (!userSession) {
+      alert('Vous devez être connecté pour créer un utilisateur.');
+      return;
+    }
+
+    // Insertion de l'utilisateur dans la table Utilisateur
     const { data: userData, error: userError } = await supabase
       .from('Utilisateur')
       .insert([{
         pseudo: user.value.pseudo,
-        mot_de_passe: 'motdepassepardefaut', 
+        email: user.value.email,
+        mot_de_passe: 'motdepassepardefaut',  // Tu devras sécuriser le mot de passe par la suite
+        groupe: user.value.groupe
       }]);
 
+    console.log('Données utilisateur:', userData); // Log pour afficher les données de l'utilisateur créé
+
     if (userError) {
+      console.error('Erreur lors de l\'insertion dans Utilisateur:', userError);
       throw new Error(userError.message);
     }
 
     const userId = userData[0].id_utilisateur;
+    console.log('ID utilisateur créé:', userId); // Log pour vérifier l'ID de l'utilisateur
 
+    // Insertion dans la table Appartenir
     const { error: groupError } = await supabase
       .from('Appartenir')
       .insert([{
@@ -61,11 +78,13 @@ const createUser = async () => {
       }]);
 
     if (groupError) {
+      console.error('Erreur lors de l\'insertion dans Appartenir:', groupError);
       throw new Error(groupError.message);
     }
 
     console.log('Utilisateur créé et associé au groupe avec succès');
     
+    // Réinitialiser le formulaire après succès
     user.value = { pseudo: '', nom: '', email: '', groupe: '1' };
     
     emit('refresh'); 

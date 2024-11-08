@@ -1,23 +1,23 @@
 <template>
   <div>
-    <!-- Header de la page Utilisateur -->
     <header>
       <h1>Gestion des Utilisateurs</h1>
     </header>
 
     <section>
-      <h2>Gérer les Utilisateurs</h2>
       <button @click="showCreationForm">Créer un utilisateur</button>
 
-      <!-- Formulaire de création -->
       <div v-if="showCreation">
         <CreationU @refresh="fetchUtilisateurs" @cancel="hideCreationForm" />
       </div>
 
-      <!-- Liste des utilisateurs -->
       <table v-else class="data-table">
         <thead>
           <tr>
+            <th>
+              <!-- "Tout cocher" : coche/décoche toutes les cases -->
+              <input type="checkbox" v-model="selectAll" @change="toggleSelectAll" />
+            </th>
             <th>Nom d'utilisateur</th>
             <th>Nom</th>
             <th>Email</th>
@@ -26,7 +26,15 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(utilisateur, index) in utilisateurs" :key="index">
+          <tr v-for="(utilisateur, index) in utilisateurs" :key="utilisateur.id">
+            <td>
+              <!-- Coche/décoche chaque utilisateur individuellement -->
+              <input 
+                type="checkbox" 
+                :value="utilisateur.id"
+                v-model="selectedUsers"
+              />
+            </td>
             <td>{{ utilisateur.pseudo }}</td>
             <td>{{ utilisateur.nom }}</td>
             <td>{{ utilisateur.email }}</td>
@@ -40,7 +48,7 @@
       </table>
     </section>
 
-    <!-- Modal pour modification d'utilisateur -->
+    <!-- Modale de modification utilisateur -->
     <div v-if="showEditModal" class="modal">
       <div class="modal-content">
         <h3>Modifier l'utilisateur</h3>
@@ -55,10 +63,10 @@
       </div>
     </div>
 
-    <!-- Modal de confirmation de suppression -->
+    <!-- Modale de suppression utilisateur -->
     <div v-if="showDeleteModal" class="modal">
       <div class="modal-content">
-        <h3>Êtes-vous sûr de vouloir supprimer cet utilisateur?</h3>
+        <h3>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</h3>
         <button @click="deleteUser">Supprimer</button>
         <button @click="closeDeleteModal">Annuler</button>
       </div>
@@ -78,7 +86,10 @@ const showEditModal = ref(false);
 const showDeleteModal = ref(false);
 const editUtilisateur = ref({});
 const userToDelete = ref(null);
+const selectAll = ref(false); // Case pour "Tout cocher"
+const selectedUsers = ref([]); // Liste des utilisateurs sélectionnés
 
+// Fonction pour récupérer les utilisateurs
 const fetchUtilisateurs = async () => {
   const { data, error } = await supabase.from('utilisateur').select(`*, appartenir (groupe (nom, role))`);
   if (error) {
@@ -88,23 +99,28 @@ const fetchUtilisateurs = async () => {
   }
 };
 
+// Fonction pour afficher le formulaire de création
 const showCreationForm = () => {
   showCreation.value = true;
 };
 
+// Fonction pour cacher le formulaire de création
 const hideCreationForm = () => {
   showCreation.value = false;
 };
 
+// Fonction pour modifier un utilisateur
 const editUser = (utilisateur) => {
-  editUtilisateur.value = { ...utilisateur }; 
+  editUtilisateur.value = { ...utilisateur };
   showEditModal.value = true;
 };
 
+// Fonction pour fermer la modale de modification
 const closeEditModal = () => {
   showEditModal.value = false;
 };
 
+// Fonction pour mettre à jour un utilisateur
 const updateUser = async () => {
   const { error } = await supabase
     .from('utilisateur')
@@ -122,11 +138,13 @@ const updateUser = async () => {
   }
 };
 
+// Fonction pour confirmer la suppression d'un utilisateur
 const confirmDeleteUser = (utilisateur) => {
-  userToDelete.value = utilisateur; 
+  userToDelete.value = utilisateur;
   showDeleteModal.value = true;
 };
 
+// Fonction pour supprimer un utilisateur
 const deleteUser = async () => {
   const { error } = await supabase.from('utilisateur').delete().eq('id', userToDelete.value.id);
 
@@ -138,16 +156,28 @@ const deleteUser = async () => {
   }
 };
 
+// Fonction pour fermer la modale de suppression
 const closeDeleteModal = () => {
   showDeleteModal.value = false;
 };
 
+// Fonction pour gérer le changement de la case "tout cocher"
+const toggleSelectAll = () => {
+  if (selectAll.value) {
+    selectedUsers.value = utilisateurs.value.map((utilisateur) => utilisateur.id);
+  } else {
+    selectedUsers.value = [];
+  }
+};
+
+// Au montage du composant, on récupère les utilisateurs
 onMounted(() => {
   fetchUtilisateurs();
 });
 </script>
 
 <style scoped>
+/* Styles */
 header {
   background-color: #c59edb;
   color: white;
@@ -208,7 +238,6 @@ table th, table td {
   border-radius: 8px;
   width: 300px;
   margin-left: 5px;
-
 }
 
 .modal button {
