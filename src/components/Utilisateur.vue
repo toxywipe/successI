@@ -28,7 +28,6 @@
         <tbody>
           <tr v-for="(utilisateur, index) in utilisateurs" :key="utilisateur.id">
             <td>
-              <!-- Coche/décoche chaque utilisateur individuellement -->
               <input 
                 type="checkbox" 
                 :value="utilisateur.id"

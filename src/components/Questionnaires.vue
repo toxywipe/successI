@@ -7,6 +7,7 @@
     <section>
       <button @click="showCreationForm">Créer un Questionnaire</button>
 
+      <!-- Modal for creating a questionnaire -->
       <div v-if="showCreation">
         <CreationQ @refresh="fetchQuestionnaires" @cancel="hideCreationForm" />
       </div>
@@ -14,7 +15,6 @@
       <table v-else class="data-table">
         <thead>
           <tr>
-            <!-- Colonne "Tout cocher" -->
             <th>
               <input type="checkbox" v-model="selectAll" @change="toggleSelectAll" />
             </th>
@@ -28,7 +28,6 @@
         <tbody>
           <tr v-for="(questionnaire, index) in questionnaires" :key="questionnaire.id">
             <td>
-              <!-- Case à cocher pour chaque questionnaire -->
               <input 
                 type="checkbox" 
                 :checked="selectedQuestionnaires.includes(questionnaire.id)"
@@ -57,10 +56,9 @@ import CreationQ from './CreationQ.vue';
 
 const questionnaires = ref([]);
 const showCreation = ref(false);
-const selectAll = ref(false);  // Case "Tout cocher"
-const selectedQuestionnaires = ref([]);  // Liste des questionnaires sélectionnés
+const selectAll = ref(false);
+const selectedQuestionnaires = ref([]);
 
-// Récupérer les questionnaires depuis Supabase
 const fetchQuestionnaires = async () => {
   const { data, error } = await supabase.from('questionnaire').select('*');
   if (error) {
@@ -70,48 +68,39 @@ const fetchQuestionnaires = async () => {
   }
 };
 
-// Afficher le formulaire de création de questionnaire
 const showCreationForm = () => {
   showCreation.value = true;
 };
 
-// Cacher le formulaire de création
 const hideCreationForm = () => {
   showCreation.value = false;
 };
 
-// Fonction de modification du questionnaire
 const editQuestionnaire = (questionnaireId) => {
   console.log('Modifier le questionnaire', questionnaireId);
 };
 
-// Fonction de suppression du questionnaire
 const deleteQuestionnaire = (questionnaireId) => {
   console.log('Supprimer le questionnaire', questionnaireId);
 };
 
-// Gérer la sélection/dé-sélection de la case "Tout cocher"
 const toggleSelectAll = () => {
   if (selectAll.value) {
-    selectedQuestionnaires.value = questionnaires.value.map((q) => q.id); // Sélectionner tous
+    selectedQuestionnaires.value = questionnaires.value.map((q) => q.id);
   } else {
-    selectedQuestionnaires.value = []; // Désélectionner tous
+    selectedQuestionnaires.value = [];
   }
 };
 
-// Gérer la sélection/dé-sélection d'un questionnaire individuel
 const toggleQuestionnaireSelection = (id) => {
   if (selectedQuestionnaires.value.includes(id)) {
-    selectedQuestionnaires.value = selectedQuestionnaires.value.filter((qid) => qid !== id);  // Retirer
+    selectedQuestionnaires.value = selectedQuestionnaires.value.filter((qid) => qid !== id);
   } else {
-    selectedQuestionnaires.value.push(id);  // Ajouter
+    selectedQuestionnaires.value.push(id);
   }
-
-  // Vérifier si tous les questionnaires sont sélectionnés pour gérer la case "Tout cocher"
   selectAll.value = questionnaires.value.length === selectedQuestionnaires.value.length;
 };
 
-// Au montage du composant, récupérer les questionnaires
 onMounted(() => {
   fetchQuestionnaires();
 });

@@ -103,14 +103,5 @@
   .start-btn:hover {
     background-color: #b48ac6;
   }
-  .start-btn:hover {
-    background-color: #b48ac6;
-    .start-btn:hover {
-    background-color: #b48ac6;
-    .start-btn:hover {
-    background-color: #b48ac6;
-  }
-  }
-  }
   </style>
   
