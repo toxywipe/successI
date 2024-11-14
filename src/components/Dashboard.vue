@@ -21,14 +21,12 @@
   <script setup>
   import { ref, onMounted } from 'vue';
   
-  // Déclarations pour stocker les statistiques
   const totalUtilisateurs = ref(0);
   const totalQuestionnaires = ref(0);
   const totalEvaluations = ref(0);
   
   const fetchStats = async () => {
-    // Appel des API pour obtenir les statistiques (à remplacer par des appels réels)
-    totalUtilisateurs.value = 4; // exemple statique
+    totalUtilisateurs.value = 4; 
     totalQuestionnaires.value = 4;
     totalEvaluations.value = 4;
   };
