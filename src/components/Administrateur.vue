@@ -124,5 +124,9 @@ button:hover {
   margin-top: 120px;
   text-align: center;
 }
+.component-container {
+  margin-top: 120px;
+  text-align: center;
+}
 </style>
 
