@@ -84,22 +84,30 @@ const createUser = async () => {
     // Hachage du mot de passe avant l'insertion
     const hashedPassword = await bcrypt.hash(user.value.mot_de_passe, 10);
 
+    // Insertion de l'utilisateur dans la table "utilisateur"
     const { data: userData, error: userError } = await supabase
-      .from('utilisateur')
+      .from('utilisateur')  // Table "utilisateur" en minuscules
       .insert([{
-        pseudo: user.value.pseudo,
-        mot_de_passe: hashedPassword,
-        role: user.value.role
+        pseudo: user.value.pseudo,  // "pseudo" en minuscules
+        mot_de_passe: hashedPassword  // "mot_de_passe" en minuscules
       }]);
 
     if (userError) {
-      console.error('Erreur lors de la création de l\'utilisateur:', userError);
-      alert('Erreur lors de la création de l\'utilisateur.');
+      console.error('Erreur lors de la création de l\'utilisateur:', userError.message);
+      alert('Erreur lors de la création de l\'utilisateur: ' + userError.message);
+      return;
+    }
+
+    // Vérifiez que userData contient des données avant d'accéder à l'ID de l'utilisateur
+    if (!userData || !userData[0]) {
+      console.error('Aucune donnée retournée pour l\'utilisateur');
+      alert('Aucune donnée retournée lors de la création de l\'utilisateur.');
       return;
     }
 
     const userId = userData[0].id_utilisateur;
 
+    // Insertion de l'association utilisateur-groupe dans la table "appartenir"
     const { error: groupError } = await supabase
       .from('appartenir')
       .insert([{
@@ -108,8 +116,8 @@ const createUser = async () => {
       }]);
 
     if (groupError) {
-      console.error('Erreur lors de l\'association de l\'utilisateur au groupe:', groupError);
-      alert('Erreur lors de l\'association de l\'utilisateur au groupe.');
+      console.error('Erreur lors de l\'association de l\'utilisateur au groupe:', groupError.message);
+      alert('Erreur lors de l\'association de l\'utilisateur au groupe: ' + groupError.message);
       return;
     }
 
@@ -119,7 +127,7 @@ const createUser = async () => {
     emit('cancel'); // Ferme le pop-up après la création réussie
   } catch (error) {
     console.error('Erreur lors de la création de l\'utilisateur:', error);
-    alert('Une erreur s\'est produite lors de la création de l\'utilisateur.');
+    alert('Une erreur s\'est produite lors de la création de l\'utilisateur: ' + error.message);
   }
 };
 
