@@ -37,7 +37,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import bcrypt from 'bcryptjs'; // Pour le hachage du mot de passe
+import bcrypt from 'bcryptjs';
 import { supabase } from '../supabase';
 
 const emit = defineEmits(['refresh', 'cancel']);
@@ -88,13 +88,14 @@ const createUser = async () => {
       .from('utilisateur')
       .insert([{
         pseudo: user.value.pseudo,
-        mot_de_passe: hashedPassword, // Utilisation du mot de passe haché
+        mot_de_passe: hashedPassword,
         role: user.value.role
       }]);
 
     if (userError) {
       console.error('Erreur lors de la création de l\'utilisateur:', userError);
-      throw new Error(userError.message);
+      alert('Erreur lors de la création de l\'utilisateur.');
+      return;
     }
 
     const userId = userData[0].id_utilisateur;
@@ -108,13 +109,17 @@ const createUser = async () => {
 
     if (groupError) {
       console.error('Erreur lors de l\'association de l\'utilisateur au groupe:', groupError);
-      throw new Error(groupError.message);
+      alert('Erreur lors de l\'association de l\'utilisateur au groupe.');
+      return;
     }
 
+    // Réinitialise les champs du formulaire
     user.value = { pseudo: '', mot_de_passe: '', confirmation_mot_de_passe: '', groupe: null, role: '' };
     emit('refresh'); // Actualise la liste des utilisateurs dans la vue principale
+    emit('cancel'); // Ferme le pop-up après la création réussie
   } catch (error) {
     console.error('Erreur lors de la création de l\'utilisateur:', error);
+    alert('Une erreur s\'est produite lors de la création de l\'utilisateur.');
   }
 };
 
