@@ -28,8 +28,8 @@
         <tbody>
           <tr v-for="(utilisateur, index) in utilisateurs" :key="utilisateur.id">
             <td>
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 :value="utilisateur.id"
                 v-model="selectedUsers"
               />
@@ -65,24 +65,39 @@
     <!-- Modale de suppression utilisateur -->
     <div v-if="showDeleteModal" class="modal">
       <div class="modal-content">
-        <h3>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</h3>
-        <button @click="deleteUser">Supprimer</button>
+        <h3>Mot de passe requis</h3>
+        <input
+          type="password"
+          v-model="motDePasse"
+          placeholder="Entrez votre mot de passe"
+        />
+        <button @click="verifyPassword">Vérifier</button>
         <button @click="closeDeleteModal">Annuler</button>
       </div>
     </div>
 
+    <!-- Confirmation de suppression -->
+    <div v-if="showConfirmModal" class="modal">
+      <div class="modal-content">
+        <h3>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</h3>
+        <button @click="deleteUser">Supprimer</button>
+        <button @click="closeConfirmModal">Annuler</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { supabase } from '../supabase';
-import CreationU from './CreationU.vue';
+import { ref, onMounted } from "vue";
+import { supabase } from "../supabase";
+import CreationU from "./CreationU.vue";
 
 const utilisateurs = ref([]);
 const showCreation = ref(false);
 const showEditModal = ref(false);
 const showDeleteModal = ref(false);
+const showConfirmModal = ref(false);
+const motDePasse = ref("");
 const editUtilisateur = ref({});
 const userToDelete = ref(null);
 const selectAll = ref(false); // Case pour "Tout cocher"
@@ -90,9 +105,11 @@ const selectedUsers = ref([]); // Liste des utilisateurs sélectionnés
 
 // Fonction pour récupérer les utilisateurs
 const fetchUtilisateurs = async () => {
-  const { data, error } = await supabase.from('utilisateur').select(`*, appartenir (groupe (nom, role))`);
+  const { data, error } = await supabase
+    .from("utilisateur")
+    .select(`*, appartenir (groupe (nom, role))`);
   if (error) {
-    console.error('Erreur lors de la récupération des utilisateurs:', error);
+    console.error("Erreur lors de la récupération des utilisateurs:", error);
   } else {
     utilisateurs.value = data;
   }
@@ -122,15 +139,15 @@ const closeEditModal = () => {
 // Fonction pour mettre à jour un utilisateur
 const updateUser = async () => {
   const { error } = await supabase
-    .from('utilisateur')
+    .from("utilisateur")
     .update({
       pseudo: editUtilisateur.value.pseudo,
       email: editUtilisateur.value.email,
     })
-    .eq('id', editUtilisateur.value.id);
+    .eq("id", editUtilisateur.value.id);
 
   if (error) {
-    console.error('Erreur lors de la mise à jour de l\'utilisateur:', error);
+    console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
   } else {
     fetchUtilisateurs();
     closeEditModal();
@@ -143,21 +160,43 @@ const confirmDeleteUser = (utilisateur) => {
   showDeleteModal.value = true;
 };
 
+// Fonction pour vérifier le mot de passe avant la suppression
+const verifyPassword = async () => {
+  const { data, error } = await supabase
+    .from("utilisateur")
+    .select("mot_de_passe")
+    .eq("id", userToDelete.value.id)
+    .single();
+
+  if (error || data.mot_de_passe !== motDePasse.value) {
+    alert("Mot de passe incorrect !");
+  } else {
+    closeDeleteModal();
+    showConfirmModal.value = true;
+  }
+};
+
 // Fonction pour supprimer un utilisateur
 const deleteUser = async () => {
-  const { error } = await supabase.from('utilisateur').delete().eq('id', userToDelete.value.id);
+  const { error } = await supabase.from("utilisateur").delete().eq("id", userToDelete.value.id);
 
   if (error) {
-    console.error('Erreur lors de la suppression de l\'utilisateur:', error);
+    console.error("Erreur lors de la suppression de l'utilisateur:", error);
   } else {
     fetchUtilisateurs();
-    closeDeleteModal();
+    closeConfirmModal();
   }
 };
 
 // Fonction pour fermer la modale de suppression
 const closeDeleteModal = () => {
   showDeleteModal.value = false;
+  motDePasse.value = "";
+};
+
+// Fonction pour fermer la modale de confirmation
+const closeConfirmModal = () => {
+  showConfirmModal.value = false;
 };
 
 // Fonction pour gérer le changement de la case "tout cocher"
